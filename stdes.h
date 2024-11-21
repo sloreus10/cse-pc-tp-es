@@ -1,15 +1,16 @@
 #ifndef _STDES_H
 #define _STDES_H
 
-//#define BUFFER_SIZE 10 // 1KB la taille du buffer
+#define BUFFER_SIZE 1024 // 1KB la taille du buffer
 
 struct _ES_FICHIER;
 typedef struct _ES_FICHIER FICHIER;
 
-extern FICHIER *stdout;
-extern FICHIER *stderr;
+extern FICHIER *my_stdout;
+extern FICHIER *my_stderr;
 
-//void initialiser_flux(void); // Initialisation des flux
+// Initialisation des flux
+void initialiser_flux(void);
 
 /* mode: 'L' = lecture, 'E' = écriture */
 FICHIER *ouvrir(const char *nom, char mode);

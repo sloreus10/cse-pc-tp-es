@@ -1,2 +1,4 @@
-Je suis le test ecriture
-et je fais des tests
+je veux ecrire
+des text 
+dans ce fichier
+fin

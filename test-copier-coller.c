@@ -6,6 +6,9 @@
 
 int main(int argc, char *argv[])
 {
+    // Initialiser les flux globaux
+    initialiser_flux();
+
     FICHIER *f1;
     FICHIER *f2;
     char buffer[BUFFER_SIZE];
@@ -33,7 +36,7 @@ int main(int argc, char *argv[])
     // Lire et écrire en utilisant un tampon
     while ((nbelem_lus = lire(buffer, sizeof(char), BUFFER_SIZE, f1)) > 0) {
         // Écrire sur la console
-        ecrire(buffer, sizeof(char), nbelem_lus, stdout);
+        ecrire(buffer, sizeof(char), nbelem_lus, my_stdout);
         //fflush(stdout);  // S'assurer que les données sont affichées immédiatement
 
         // Écrire dans le fichier de destination

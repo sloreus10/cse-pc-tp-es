@@ -4,10 +4,11 @@
 #include <fcntl.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
 #include <errno.h>  // Pour gérer les erreurs système
 
 // Taille par défaut du tampon de lecture/écriture
-#define BUFFER_SIZE 64
+//#define BUFFER_SIZE 64
 
 // Structure représentant un fichier
 struct _ES_FICHIER {
@@ -19,8 +20,26 @@ struct _ES_FICHIER {
     int eof;                    // Indicateur de fin de fichier
 };
 
+// Flux globaux
+FICHIER *my_stdout = NULL;
+
+// Fonction pour initialiser les flux globaux
+void initialiser_flux(void) {
+    my_stdout = (FICHIER *)malloc(sizeof(FICHIER));
+    if (!my_stdout) {
+        perror("Erreur : allocation de my_stdout");
+        exit(EXIT_FAILURE);
+    }
+    my_stdout->fd = STDOUT_FILENO; // Flux standard pour la console
+    my_stdout->buf_pos = 0;
+    my_stdout->buf_size = 0;
+    my_stdout->mode = 'W';
+    my_stdout->eof = 0;
+}
+
 // 1 - Fonction pour ouvrir un fichier en mode lecture ('R') ou écriture ('W')
 FICHIER *ouvrir(const char *nom, char mode) {
+    // Vérifier les paramètres d'entrée de la fonction ouvrir
     if (!nom || (mode != 'R' && mode != 'W')) {
         // Nom invalide ou mode incorrect
         return NULL;
@@ -40,6 +59,7 @@ FICHIER *ouvrir(const char *nom, char mode) {
     f->fd = open(nom, flags, 0644);
     if (f->fd == -1) {
         // Échec de l'ouverture du fichier, libération de la mémoire
+        perror("Erreur lors de l'ouverture du fichier");
         free(f);
         return NULL;
     }
@@ -59,6 +79,7 @@ FICHIER *ouvrir(const char *nom, char mode) {
 int fermer(FICHIER *f) {
     if (!f) {
         // Pointeur invalide
+        fprintf(stderr, "Erreur : pointeur invalide\n");
         return -1;
     }
 
@@ -66,6 +87,7 @@ int fermer(FICHIER *f) {
     if (f->mode == 'W' && f->buf_pos > 0) {
         if (vider(f) == -1) {
             // Erreur lors du vidage
+            perror("Erreur lors du vidage du tampon");
             close(f->fd);
             free(f);
             return -1;
@@ -75,6 +97,7 @@ int fermer(FICHIER *f) {
     // Fermer le fichier
     if (close(f->fd) == -1) {
         // Échec de la fermeture du fichier
+        perror("Erreur lors de la fermeture du fichier");
         free(f);
         return -1;
     }
@@ -100,49 +123,42 @@ int fermer(FICHIER *f) {
 int lire(void *p, unsigned int taille, unsigned int nbelem, FICHIER *f) {
     if (!f || f->mode != 'R' || !p || taille == 0 || nbelem == 0) {
         // Paramètres invalides ou fichier non ouvert en lecture
+        fprintf(stderr, "Erreur : paramètres invalides pour lire\n");
         return -1;
     }
 
     size_t total_bytes = taille * nbelem;
     size_t bytes_read = 0;
-    size_t bytes_left = total_bytes;
-
     // Lire les données disponibles dans le tampon
     if (f->buf_pos < f->buf_size) {
-        size_t buffer_bytes = f->buf_size - f->buf_pos;
-        size_t to_copy = (bytes_left < buffer_bytes) ? bytes_left : buffer_bytes;
+        size_t available = f->buf_size - f->buf_pos;
+        size_t to_copy = (total_bytes < available) ? total_bytes : available;
 
         memcpy(p, f->tampon + f->buf_pos, to_copy);
         f->buf_pos += to_copy;
         bytes_read += to_copy;
-        bytes_left -= to_copy;
-
-        if (bytes_left == 0) {
-            return bytes_read / taille;
-        }
     }
 
     // Lire les données depuis le fichier
-    while (bytes_left > 0) {
+    while (bytes_read < total_bytes) {
         ssize_t n = read(f->fd, f->tampon, BUFFER_SIZE);
         if (n == 0) {
-            // Fin de fichier
             f->eof = 1;
-            break;
+            break; // Fin de fichier
         }
         if (n < 0) {
-            // Erreur de lecture
+            perror("Erreur lors de la lecture");
             return -1;
         }
 
         f->buf_size = n;
         f->buf_pos = 0;
 
-        size_t to_copy = (bytes_left < (size_t)n) ? bytes_left : (size_t)n;
+        size_t to_copy = (total_bytes - bytes_read < (size_t)n) ? (total_bytes - bytes_read) : (size_t)n;
         memcpy((char *)p + bytes_read, f->tampon, to_copy);
 
+        f->buf_pos += to_copy;
         bytes_read += to_copy;
-        bytes_left -= to_copy;
     }
 
     return bytes_read / taille;
@@ -154,6 +170,7 @@ int lire(void *p, unsigned int taille, unsigned int nbelem, FICHIER *f) {
 int ecrire(const void *p, unsigned int taille, unsigned int nbelem, FICHIER *f) {
     if (!f || f->mode != 'W' || !p || taille == 0 || nbelem == 0) {
         // Paramètres invalides ou fichier non ouvert en écriture
+        fprintf(stderr, "Erreur : paramètres invalides pour ecrire\n");
         return -1;
     }
 
@@ -185,12 +202,14 @@ int ecrire(const void *p, unsigned int taille, unsigned int nbelem, FICHIER *f) 
 int vider(FICHIER *f) {
     if (!f || f->mode != 'W') {
         // Fichier invalide ou mode incorrect
+        fprintf(stderr, "Erreur : tentative de vidage sur un fichier non ouvert en écriture\n");
         return -1;
     }
 
     ssize_t bytes_written = write(f->fd, f->tampon, f->buf_pos);
     if (bytes_written == -1) {
         // Erreur lors de l'écriture
+        perror("Erreur lors de l'écriture dans le fichier");
         return -1;
     }
 
