@@ -182,3 +182,52 @@ int vider(FICHIER *f) {
     f->buf_pos_write = 0;
     return 0;
 }
+
+
+
+// 6 - Fonction pour écrire dans un fichier avec un formatage
+int fecriref(FICHIER *f, const char *format, ...) {
+    if (!f || f->mode != 'W' || !format) {
+        return -1;
+    }
+
+    va_list args;
+    va_start(args, format);
+
+    int result = vfprintf(fdopen(f->fd, "w"), format, args);
+
+    va_end(args);
+    return result;
+}
+
+
+// 7 - Fonction pour écrire directement dans la console avec un formatage
+int ecriref(const char *format, ...) {
+    if (!format) {
+        return -1;
+    }
+
+    va_list args;
+    va_start(args, format);
+
+    int result = vfprintf(stdout, format, args);
+
+    va_end(args);
+    return result;
+}
+
+
+// 8 - Fonction pour lire depuis un fichier avec un formatage
+int fliref(FICHIER *f, const char *format, ...) {
+    if (!f || f->mode != 'R' || !format) {
+        return -1;
+    }
+
+    va_list args;
+    va_start(args, format);
+
+    int result = vfscanf(fdopen(f->fd, "r"), format, args);
+
+    va_end(args);
+    return result;
+}

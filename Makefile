@@ -5,10 +5,10 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c11
 
 # Nom de l'exécutable
-TARGETS = test test-lecture test-ecriture test-copier-coller
+TARGETS = test test-rand test-lecture test-ecriture test-copier-coller test-plusieurs-el
 
 # Fichiers source du projet
-SRCS = stdes.c test.c test-lecture.c test-ecriture.c test-copier-coller.c
+SRCS = stdes.c test.c test-rand.c test-lecture.c test-ecriture.c test-copier-coller.c test-plusieurs-el.c
 
 # Fichiers objets générés à partir des fichiers sources
 OBJS = $(SRCS:.c=.o)
@@ -19,6 +19,14 @@ all: $(TARGETS)
 # Règle pour créer l'exécutable "test" à partir des fichiers objets
 test: stdes.o test.o
 	$(CC) $(CFLAGS) -o $@ stdes.o test.o
+
+# Règle pour créer l'exécutable "test-rand" à partir des fichiers objets
+test-rand: stdes.o test-rand.o
+	$(CC) $(CFLAGS) -o $@ stdes.o test-rand.o
+
+# Règle pour créer l'exécutable "test-plusieurs-el" à partir des fichiers objets
+test-plusieurs-el: stdes.o test-plusieurs-el.o
+	$(CC) $(CFLAGS) -o $@ stdes.o test-plusieurs-el.o
 
 # Règle pour créer l'exécutable "test-lecture" à partir des fichiers objets
 test-lecture: stdes.o test-lecture.o
