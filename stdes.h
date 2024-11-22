@@ -3,7 +3,18 @@
 
 #define BUFFER_SIZE 1024 // 1KB la taille du buffer
 
-struct _ES_FICHIER;
+// Définition complète de la structure FICHIER
+struct _ES_FICHIER {
+    int fd;                     // Descripteur de fichier
+    char tampon[BUFFER_SIZE];    // Tampon pour les données
+    unsigned int buf_size;      // Taille actuelle des données dans le tampon
+    unsigned int buf_pos_read;       // Position actuelle dans le tampon de lecteure
+    unsigned int buf_pos_write;       // Position actuelle dans le tampon d'écriture
+    char mode;                  // Mode du fichier ('R' pour lecture, 'W' pour écriture)
+    int eof;                    // Indicateur de fin de fichier
+};
+
+// Définition du type FICHIER
 typedef struct _ES_FICHIER FICHIER;
 
 extern FICHIER *my_stdout;
