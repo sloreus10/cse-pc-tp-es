@@ -1,19 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "stdes.h" // Assurez-vous que ce fichier contient vos définitions de types et de fonctions
 
 void lire_fichier(const char *nom_fichier) {
-    FILE *fichier = fopen(nom_fichier, "r"); // Ouvre le fichier en mode lecture
+    // Ouvrir le fichier en mode lecture ('R')
+    FICHIER *fichier = ouvrir(nom_fichier, 'R');
     if (fichier == NULL) {
         perror("Erreur d'ouverture du fichier");
         return;
     }
 
     char ch;
-    while ((ch = fgetc(fichier)) != EOF) { // Lire caractère par caractère
+    while (lire(&ch, sizeof(char), 1, fichier) > 0) { // Lire caractère par caractère
         putchar(ch); // Afficher chaque caractère
     }
 
-    fclose(fichier); // Fermer le fichier
+    // Fermer le fichier
+    if (fermer(fichier) == -1) {
+        perror("Erreur lors de la fermeture du fichier");
+    }
 }
 
 int main() {

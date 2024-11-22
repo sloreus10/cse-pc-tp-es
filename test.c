@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     // Lire et écrire les données caractère par caractère
     while ((bytesRead = lire(&c, 1, 1, f1)) == 1) {  // Lire un élément (1 octet) à la fois
         // Afficher le caractère lu
-        printf("Caractère lu : %c\n", c);
+        printf("Élement lu : %c\n", c);
 
         // Écrire les éléments dans le fichier destination
         ssize_t bytesWritten = ecrire(&c, 1, 1, f2);
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         }
 
         // Afficher le caractère écrit
-        printf("Caractère écrit : %c\n", c);
+        printf("Élement écrit : %c\n", c);
 
         // Mettre à jour le compteur total
         taille_total_read_write += bytesWritten;

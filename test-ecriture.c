@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "stdes.h" // Assurez-vous que ce fichier contient vos définitions de types et de fonctions
 
 void ecrire_fichier(const char *nom_fichier) {
-    FILE *fichier = fopen(nom_fichier, "w"); // Ouvre le fichier en mode écriture
+    // Ouvrir le fichier en mode écriture ('W')
+    FICHIER *fichier = ouvrir(nom_fichier, 'W');
     if (fichier == NULL) {
         perror("Erreur d'ouverture du fichier");
         return;
@@ -13,10 +16,18 @@ void ecrire_fichier(const char *nom_fichier) {
 
     // Lire et écrire ligne par ligne
     while (fgets(ligne, sizeof(ligne), stdin)) {
-        fputs(ligne, fichier); // Écrire la ligne dans le fichier
+        // Écrire la ligne dans le fichier
+        if (ecrire(ligne, sizeof(char), strlen(ligne), fichier) == -1) {
+            perror("Erreur lors de l'écriture dans le fichier");
+            fermer(fichier);
+            return;
+        }
     }
 
-    fclose(fichier); // Fermer le fichier
+    // Fermer le fichier
+    if (fermer(fichier) == -1) {
+        perror("Erreur lors de la fermeture du fichier");
+    }
 }
 
 int main() {
